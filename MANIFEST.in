@@ -1,0 +1,2 @@
+recursive-include orbis_addon_satyanweshi *.txt
+recursive-include orbis_addon_satyanweshi *.json
