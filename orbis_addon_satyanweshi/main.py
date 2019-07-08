@@ -1,4 +1,3 @@
-#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
 from operator import itemgetter
@@ -11,11 +10,11 @@ import json
 import os
 
 from . import templates
-from orbis.config.paths import output_path
-from orbis.core.addon import AddonBaseClass
+from orbis_eval.config.paths import output_path
+from orbis_eval.core.addon import AddonBaseClass
 
 
-class Satyanweshi(AddonBaseClass):
+class Main(AddonBaseClass):
     """docstring for Satyanweshi"""
 
     def __init__(self):
