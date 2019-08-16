@@ -11,7 +11,7 @@ import os
 
 from . import templates
 from orbis_eval.config.paths import output_path
-from orbis_eval.core.addon import AddonBaseClass
+from orbis_eval.core.base import AddonBaseClass
 
 
 class Main(AddonBaseClass):
