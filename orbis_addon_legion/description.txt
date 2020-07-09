@@ -1,0 +1,1 @@
+Legion gives hints to the gold standard quality by analyzing how many annotators agree with the gold standard annotations. 

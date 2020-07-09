@@ -1,4 +1,3 @@
-# Satyanweshi Addon for Orbis
+# Legion Addon for Orbis
 
-Drill-down analysis of two evaluation runs side by side as HTML output.
 

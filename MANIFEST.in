@@ -1,2 +1,2 @@
-recursive-include orbis_addon_satyanweshi *.txt
-recursive-include orbis_addon_satyanweshi *.json
+recursive-include orbis_addon_legion *.txt
+recursive-include orbis_addon_legion *.json
