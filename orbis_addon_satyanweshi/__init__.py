@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 __name__ = "orbis_addon_satyanweshi"
-__version__ = "2.1.1"
+__version__ = "2.2.1"
 __author__ = "fabod"
-__year__ = "2019"
+__year__ = "2020"
 __description__ = "The Satyanweshi Addon for Orbis to compare two evaluation runs with each other."
 __license__ = "GPL2"
 __min_python_version__ = "3.6"

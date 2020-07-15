@@ -11,7 +11,12 @@ import os
 
 from . import templates
 from orbis_eval.config.paths import output_path
+from orbis_eval.config.paths import log_path
 from orbis_eval.core.base import AddonBaseClass
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class Main(AddonBaseClass):
@@ -24,17 +29,21 @@ class Main(AddonBaseClass):
     def run(self, args=None):
 
         if not args or not args.input:
-            response = str(input(f"Search for json item files in {output_path}? (Y/n)")).lower()
+            response = str(input(f"Search for json item files in {log_path}? (Y/n)")).lower()
+            
             while response not in ["y", "j", "n"] and len(response) > 0:
-                response = str(input(f"Response {response}({type(response)}) invalid.\nSearch for json item files in {output_path}? (Y/n)")).lower()
+                response = str(input(f"Response {response}({type(response)}) invalid.\nSearch for json item files in {log_path}? (Y/n)")).lower()
+            
             if response == "y" or response == "j" or len(response) == 0:
-                source_dir = output_path
+                source_dir = log_path
             else:
                 source_dir = str(input("Please enter directory to search for json item files:\n"))
                 while not os.path.isdir(source_dir):
                     source_dir = str(input("Input not a directory. Please enter directory to search for json item files:\n"))
+            
             files = sorted(glob.glob(os.path.join(source_dir, "*.json")))
             print("\nPlease choose two files to compare: ")
+            
             for idx, file in enumerate(files):
                 space = 5 - len(str(idx))
                 print(f"[{idx}]{space * ' '}{file.split('/')[-1]}")
@@ -45,6 +54,7 @@ class Main(AddonBaseClass):
                 file_b = int(response.split(" ")[1])
                 print(f"\nYou chose to compare:\n[{file_a}] {files[file_a].split('/')[-1]}\nwith\n[{file_b}] {files[file_b].split('/')[-1]}")
                 response = str(input("Is this correct? (Y/n)")).lower()
+                
                 if response == "y" or response == "j" or len(response) == 0:
                     return files[file_a], files[file_b]
                 else:
@@ -67,21 +77,28 @@ class Main(AddonBaseClass):
             result.append(data)
         return result
 
-
     def get_sf_colours(self, content, keys=None):
         keys = keys or set()
-        for entity in content["gold"]:
-            keys.add(entity["key"])
-        for entity in content["computed"]:
-            keys.add(entity["key"])
+
+        for doc, entities in content["gold"].items():
+            for entity in entities:
+                keys.add(entity["key"])
+
+        for doc, entities in content["computed"].items():
+            for entity in entities:
+                keys.add(entity["key"])
+        
         sf_colors = {}
         c_idx = 0
+        
         for sf in keys:
             sf_colors[sf] = Tableau_20.hex_colors[c_idx]
+            
             if c_idx == 19:
                 c_idx = 0
             else:
                 c_idx += 1
+        
         return keys, sf_colors
 
     def get_gold_entities(self, content, config, sf_colors) -> Tuple[Any, List[Dict[str, Any]]]:
@@ -90,7 +107,9 @@ class Main(AddonBaseClass):
         if len(content["gold"]) > 0:
             last_start = int(len(content["corpus"]))
             last_end = int(len(content["corpus"]))
-            for entity in sorted(content["gold"], key=itemgetter("end"), reverse=True):
+            for entities in 
+                for entity in sorted(content["gold"], key=itemgetter("end"), reverse=True):
+                
                 if entity["entity_type"] not in config["scorer"]["entities"] and len(config["scorer"]["entities"]) > 0:
                     continue
                 start_tag = f'<abbr title="{entity["key"]}" style="background-color:{sf_colors[entity["key"]]};">'
@@ -253,9 +272,9 @@ class Main(AddonBaseClass):
     def build_html_pages(self, data):
         config_0 = data[0]["config"]
         config_1 = data[1]["config"]
-        algorithm_0 = config_0["aggregator"]["service"]["name"]
-        algorithm_1 = config_1["aggregator"]["service"]["name"]
-        corpus = config_0["aggregator"]["input"]["data_set"]["name"]
+        algorithm_0 = config_0["aggregation"]["service"]["name"]
+        algorithm_1 = config_1["aggregation"]["service"]["name"]
+        corpus = config_0["aggregation"]["input"]["data_set"]["name"]
         file_name = f"santyanweshi - {algorithm_0} vs {algorithm_1} on {corpus} corpus"
         file_name = file_name + " - {:%Y-%m-%d_%H:%M:%S}".format(datetime.datetime.now())
         directory_name = os.path.join(output_path, file_name)
@@ -264,21 +283,22 @@ class Main(AddonBaseClass):
             os.makedirs(directory_name)
         except Exception:
             pass
-        for key in data[0]["items"].keys():
-            content_0 = data[0]["items"][key]
-            content_1 = data[1]["items"][key]
+            
+        for key in data[0]["results"]["items"].keys():
+            content_0 = data[0]["results"]["items"][key]
+            content_1 = data[1]["results"]["items"][key]
             keys = set()
-            keys, sf_colors = self.get_sf_colours(content_0, keys)
-            keys, sf_colors = self.get_sf_colours(content_1, keys)
-            gold_html, gold_entities = self.get_gold_entities(content_0, config_0, sf_colors)
-            if gold_html != self.get_gold_entities(content_1, config_1, sf_colors)[0]:
+            keys, sf_colors = self.get_sf_colours(data[0]["data"], keys)
+            keys, sf_colors = self.get_sf_colours(data[1]["data"], keys)
+            gold_html, gold_entities = self.get_gold_entities(data[0]["data"], config_0, sf_colors)
+            if gold_html != self.get_gold_entities(data[1]["data"], config_1, sf_colors)[0]:
                 break
-            computed_html_0, computed_entities_0 = self.get_computed_entities(content_0, config_0, sf_colors)
-            computed_html_1, computed_entities_1 = self.get_computed_entities(content_1, config_1, sf_colors)
+            computed_html_0, computed_entities_0 = self.get_computed_entities(data[0]["data"], config_0, sf_colors)
+            computed_html_1, computed_entities_1 = self.get_computed_entities(data[1]["data"], config_1, sf_colors)
             gold_entities_html = self.get_entities_html(gold_entities)
             computed_entities_html_0 = self.get_entities_html(computed_entities_0)
             computed_entities_html_1 = self.get_entities_html(computed_entities_1)
-            previous_html, next_html = self.get_prev_next_links(key, data[0]["items"], directory_name)
+            previous_html, next_html = self.get_prev_next_links(key, data[0]["results"]["items"], directory_name)
             html_content_dict = {
                 "gold_html": gold_html,
                 "computed_html_0": computed_html_0,
